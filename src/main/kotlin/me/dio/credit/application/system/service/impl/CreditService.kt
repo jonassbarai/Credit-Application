@@ -3,6 +3,7 @@ package me.dio.credit.application.system.service.impl
 import me.dio.credit.application.system.entity.Credit
 import me.dio.credit.application.system.repository.CreditRepository
 import me.dio.credit.application.system.service.ICreditService
+import java.lang.RuntimeException
 import java.util.*
 
 class CreditService(
@@ -18,11 +19,11 @@ class CreditService(
         return this.creditRepository.save(credit)
     }
 
-    override fun findAllByCustomer(customerId: Long): List<Credit> {
-        TODO("Not yet implemented")
-    }
+    override fun findAllByCustomer(customerId: Long): List<Credit> = this.creditRepository.findAllByCustomerId(customerId)
 
-    override fun findByCreditCode(creditCode: UUID): Credit {
-        TODO("Not yet implemented")
+    override fun findByCreditCode(customerId: Long,creditCode: UUID): Credit {
+       val credit =  this.creditRepository.findByCreditCode(creditCode)
+            ?: throw RuntimeException("Creditcode $creditCode not found")
+        return if(credit.customer?.id == customerId) credit else throw RuntimeException("Contact admin")
     }
 }
