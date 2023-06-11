@@ -1,4 +1,4 @@
-package me.dio.creditapplicationsystem.enumeration
+package me.dio.credit.application.system.enumeration
 
 enum class Status {
     IN_PROGRESS,
