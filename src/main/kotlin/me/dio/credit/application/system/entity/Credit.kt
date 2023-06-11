@@ -1,7 +1,7 @@
-package me.dio.creditapplicationsystem.entity
+package me.dio.credit.application.system.entity
 
 import jakarta.persistence.*
-import me.dio.creditapplicationsystem.enumeration.Status
+import me.dio.credit.application.system.enumeration.Status
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
@@ -13,6 +13,6 @@ data class Credit(
     @Column(nullable = false) val dayFirstInstallment: LocalDate,
     @Column(nullable = false) val numberInstallments: Int = 0,
     @Enumerated val status: Status = Status.IN_PROGRESS,
-    @ManyToOne val customer: Customer? = null,
+    @ManyToOne var customer: Customer? = null,
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) val id: Long? = null
 )
