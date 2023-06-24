@@ -35,8 +35,9 @@ class CustomerController(
     }
 
    @DeleteMapping("/{id}")
-    fun deleteCustomer(@PathVariable id: Long) {
+    fun deleteCustomer(@PathVariable id: Long):  ResponseEntity<String>{
         this.customerService.deleteById(id)
+       return ResponseEntity.status(HttpStatus.OK).body("Customer Deleted")
     }
 
     @PatchMapping
@@ -45,5 +46,5 @@ class CustomerController(
         val customer = this.customerService.findByid(id)
         val updatedCustomer = this.customerService.save(customerUpdateDTO.toEntity(customer))
         return ResponseEntity.status(HttpStatus.OK).body(CustomerView(updatedCustomer))
-    }
+}
 }

@@ -24,8 +24,8 @@ class CreditController(
     }
 
     @GetMapping
-    fun findallByCustomerId(@RequestParam customerId: Long): ResponseEntity<List<CreditViewList>>{
-        val creditViewList = this.creditService.findAllByCustomer(customerId).stream()
+    fun findallByCustomerId(@RequestParam (value = "customerId") customerId: Long): ResponseEntity<List<CreditViewList>>{
+        val creditViewList: List<CreditViewList> = this.creditService.findAllByCustomer(customerId).stream()
             .map { credit: Credit -> CreditViewList(credit) }
             .collect(Collectors.toList())
         return ResponseEntity.status(HttpStatus.OK).body(creditViewList)
