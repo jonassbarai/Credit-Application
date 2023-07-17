@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.UUID
 import java.util.stream.Collectors
 
-@Controller
+@RestController
 @RequestMapping("/api/credits")
 class CreditController(
     private val creditService: CreditService
