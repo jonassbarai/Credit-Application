@@ -40,7 +40,7 @@ class CustomerController(
    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteCustomer(@PathVariable id: Long):  ResponseEntity<String>{
         this.customerService.delete(id)
-       return ResponseEntity.status(HttpStatus.OK).body("Customer Deleted")
+       return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Customer Deleted")
     }
 
     @PatchMapping

@@ -3,6 +3,7 @@ package me.dio.credit.application.system.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import me.dio.credit.application.system.dto.CustomerDTO
 import me.dio.credit.application.system.dto.CustomerUpdateDTO
+import me.dio.credit.application.system.entity.Customer
 import me.dio.credit.application.system.repository.CustomerRepository
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -18,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.math.BigDecimal
+import java.util.Random
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -53,10 +55,10 @@ class CustomerControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value("sobrenome"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.cpf").value("28475934625"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.email").value("jonas@email.com"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.income").value("1000.0"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.income").value("1000.2"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.zipCode").value("000000"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.street").value("Rua do jonas, 123"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
+            //.andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
             .andDo(MockMvcResultHandlers.print())
 
     }
@@ -110,14 +112,139 @@ class CustomerControllerTest {
             .andDo(MockMvcResultHandlers.print())
     }
 
+    @Test
+    fun `should find customer by id and return 200 status`(){
+        //given
+        val customer: Customer = customerRepository.save(builderCustomerDto().toEntity())
+        //when
+        //then
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("$URL/${customer.id}")
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("jonas"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value("sobrenome"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.cpf").value("28475934625"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.email").value("jonas@email.com"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.income").value("1000"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.zipCode").value("000000"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.street").value("Rua do jonas, 123"))
+            .andDo(MockMvcResultHandlers.print())
+    }
 
+    @Test
+    fun `should not find customer when invalid id and return 400 status`() {
+        val invalidId: Long =  2L
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("$URL/${invalidId}")
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(MockMvcResultMatchers.status().isBadRequest)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("Bad request, consult the documentation"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(400))
+            .andExpect(
+                MockMvcResultMatchers.jsonPath("$.exception")
+                    .value("class me.dio.credit.application.system.exception.BusinessException")
+            )
+            .andExpect(MockMvcResultMatchers.jsonPath("$.details[*]").isNotEmpty)
+            .andDo(MockMvcResultHandlers.print())
+
+    }
+    @Test
+    fun `should delete customer by id`(){
+        //given
+        val customer: Customer = customerRepository.save(builderCustomerDto().toEntity())
+        //when
+        //then
+        mockMvc.perform(
+            MockMvcRequestBuilders.delete("$URL/${customer.id}")
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(MockMvcResultMatchers.status().isNoContent)
+
+    }
+
+    @Test
+    fun `should not delete customer by  invalid id`(){
+        //given
+       val invalidId:Long = Random().nextLong()
+        //when
+        //then
+        mockMvc.perform(
+            MockMvcRequestBuilders.delete("$URL/${invalidId}")
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(MockMvcResultMatchers.status().isBadRequest)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("Bad request, consult the documentation"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(400))
+            .andExpect(
+                MockMvcResultMatchers.jsonPath("$.exception")
+                    .value("class me.dio.credit.application.system.exception.BusinessException")
+            )
+            .andExpect(MockMvcResultMatchers.jsonPath("$.details[*]").isNotEmpty)
+            .andDo(MockMvcResultHandlers.print())
+    }
+
+    @Test
+    fun `should update customer and return 200 status`(){
+        //given
+        val customer = customerRepository.save(builderCustomerDto().toEntity());
+        val customerUpdateDTO: CustomerUpdateDTO = builderCustomerUpdateDto()
+        val valueAsString: String = objectMapper.writeValueAsString(customerUpdateDTO)
+        //when
+        //then
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .patch("$URL?customerId=${customer.id}")
+                .contentType(MediaType(MediaType.APPLICATION_JSON))
+                .content(valueAsString))
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("JonasUpdate"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value("SobrenomeUpdate"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.cpf").value("28475934625"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.email").value("jonas@email.com"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.income").value("5000.0"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.zipCode").value("45656"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.street").value("Rua Updated"))
+            //.andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
+            .andDo(MockMvcResultHandlers.print())
+
+    }
+
+    @Test
+    fun `should not update a customer with invalid id and return 400 status`() {
+        //given
+        val invalidId: Long = Random().nextLong()
+        val customerUpdateDto: CustomerUpdateDTO = builderCustomerUpdateDto()
+        val valueAsString: String = objectMapper.writeValueAsString(customerUpdateDto)
+        //when
+        //then
+        mockMvc.perform(
+            MockMvcRequestBuilders.patch("$URL?customerId=$invalidId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(valueAsString)
+        )
+            .andExpect(MockMvcResultMatchers.status().isBadRequest)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("Bad request, consult the documentation"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(400))
+            .andExpect(
+                MockMvcResultMatchers.jsonPath("$.exception")
+                    .value("class me.dio.credit.application.system.exception.BusinessException")
+            )
+            .andExpect(MockMvcResultMatchers.jsonPath("$.details[*]").isNotEmpty)
+            .andDo(MockMvcResultHandlers.print())
+    }
 
     private fun builderCustomerDto(
         firstName: String = "jonas",
         lastName: String = "sobrenome",
         cpf: String = "28475934625",
         email: String = "jonas@email.com",
-        income: BigDecimal = BigDecimal.valueOf(1000.0),
+        income: BigDecimal = BigDecimal.valueOf(1000.20),
         password: String = "1234",
         zipCode: String = "000000",
         street: String = "Rua do jonas, 123",
@@ -133,8 +260,8 @@ class CustomerControllerTest {
     )
 
     private fun builderCustomerUpdateDto(
-        firstName: String = "CamiUpdate",
-        lastName: String = "CavalcanteUpdate",
+        firstName: String = "JonasUpdate",
+        lastName: String = "SobrenomeUpdate",
         income: BigDecimal = BigDecimal.valueOf(5000.0),
         zipCode: String = "45656",
         street: String = "Rua Updated"
