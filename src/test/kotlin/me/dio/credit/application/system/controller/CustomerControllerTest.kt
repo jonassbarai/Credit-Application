@@ -39,7 +39,7 @@ class CustomerControllerTest {
     @AfterEach fun tearDown() = customerRepository.deleteAll()
 
     @Test
-    fun`should create a customer and resturn 201 status`(){
+    fun`should create a customer and return 201 status`(){
         //given
         val customerDTO = builderCustomerDto()
         val valueAsString = objectMapper.writeValueAsString(customerDTO)
